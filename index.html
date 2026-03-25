@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buch-Generator</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-text">Van Asten Coaching</div>
+        <div class="logo-sub">Bewusstseinswerkstatt</div>
+      </div>
+      <h1 class="app-title">Buch-Generator</h1>
+      <p class="app-subtitle">Verwandle deine Transkripte in ein professionelles Buch</p>
+    </header>
+
+    <!-- Stepper Navigation -->
+    <nav class="stepper" id="stepper">
+      <div class="stepper-step active" data-step="1">
+        <span class="stepper-dot">1</span>
+        <span class="stepper-label">API-Schl&uuml;ssel</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step" data-step="2">
+        <span class="stepper-dot">2</span>
+        <span class="stepper-label">Buch-Details</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step" data-step="3">
+        <span class="stepper-dot">3</span>
+        <span class="stepper-label">Transkripte</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step" data-step="4">
+        <span class="stepper-dot">4</span>
+        <span class="stepper-label">Generieren</span>
+      </div>
+      <div class="stepper-line"></div>
+      <div class="stepper-step" data-step="5">
+        <span class="stepper-dot">5</span>
+        <span class="stepper-label">Vorschau &amp; Download</span>
+      </div>
+    </nav>
+
+    <!-- Step 1: API Key -->
+    <section class="step-section" id="step-api">
+      <div class="step-header">
+        <span class="step-number">1</span>
+        <h2>API-Schl&uuml;ssel</h2>
+      </div>
+      <div class="step-content">
+        <p class="step-description">
+          Die App nutzt die Claude KI, um deine Transkripte in Buchkapitel umzuschreiben.
+          Daf&uuml;r brauchst du einen API-Schl&uuml;ssel von Anthropic.
+        </p>
+        <div class="api-key-row">
+          <input type="password" id="api-key-input" placeholder="sk-ant-..." class="input-field api-key-field">
+          <button id="toggle-api-key" class="btn btn-small" title="Anzeigen/Verbergen">Anzeigen</button>
+        </div>
+        <details class="help-box">
+          <summary>Wie bekomme ich einen API-Schl&uuml;ssel?</summary>
+          <ol>
+            <li>Gehe zu <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a></li>
+            <li>Erstelle ein Konto oder melde dich an</li>
+            <li>Gehe zu "API Keys" im Men&uuml;</li>
+            <li>Klicke auf "Create Key"</li>
+            <li>Kopiere den Schl&uuml;ssel und f&uuml;ge ihn hier ein</li>
+          </ol>
+          <p><strong>Hinweis:</strong> Der Schl&uuml;ssel bleibt nur in deinem Browser und wird nirgendwo gespeichert.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Step 2: Book Metadata -->
+    <section class="step-section" id="step-meta">
+      <div class="step-header">
+        <span class="step-number">2</span>
+        <h2>Buch-Informationen</h2>
+      </div>
+      <div class="step-content">
+        <div class="form-group">
+          <label for="book-title">Buchtitel</label>
+          <input type="text" id="book-title" placeholder="z.B. Die 5 Tages Challenge" class="input-field">
+        </div>
+        <div class="form-group">
+          <label for="book-subtitle">Untertitel</label>
+          <input type="text" id="book-subtitle" placeholder="z.B. Dein Weg zu mehr Klarheit" class="input-field">
+        </div>
+        <div class="form-group">
+          <label for="style-select">Schreibstil</label>
+          <select id="style-select" class="input-field">
+            <option value="warm">Herzlich-ermutigend &ndash; Warm, motivierend, Du-Ansprache, Coaching-Impulse</option>
+            <option value="sachlich">Sachlich-strukturiert &ndash; Klar, pr&auml;zise, faktenorientiert</option>
+            <option value="story">Story-basiert &ndash; Erz&auml;hlerisch, mit Geschichten und Metaphern</option>
+          </select>
+          <p class="field-hint">Der Schreibstil beeinflusst, wie die KI dein Transkript in Buchtext umschreibt.</p>
+        </div>
+        <div class="form-group">
+          <label for="model-select">KI-Modell</label>
+          <select id="model-select" class="input-field">
+            <option value="claude-sonnet-4-20250514">Claude Sonnet 4 &ndash; Schnell &amp; g&uuml;nstig</option>
+            <option value="claude-opus-4-20250514">Claude Opus 4 &ndash; Beste Qualit&auml;t</option>
+          </select>
+          <p class="field-hint">Sonnet ist schneller und g&uuml;nstiger. Opus liefert die h&ouml;chste Textqualit&auml;t.</p>
+        </div>
+        <div class="form-group">
+          <label for="book-instructions">Zus&auml;tzliche Anweisungen f&uuml;r die KI (optional)</label>
+          <textarea id="book-instructions" placeholder="z.B. Schreibe in einem warmen, motivierenden Ton. Verwende Du-Ansprache. F&uuml;ge Coaching-Impulse hinzu..." class="input-field textarea-field" rows="3"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3: Transcripts -->
+    <section class="step-section" id="step-transcripts">
+      <div class="step-header">
+        <span class="step-number">3</span>
+        <h2>Transkripte hochladen</h2>
+      </div>
+      <div class="step-content">
+        <p class="step-description">
+          Lade ein oder mehrere Transkripte hoch. Jedes Transkript wird zu einem eigenen Kapitel.
+          Du kannst die Reihenfolge per Drag &amp; Drop &auml;ndern und Kapitelnamen anpassen.
+        </p>
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-icon">+</div>
+          <p>Dateien hierhin ziehen oder klicken zum Ausw&auml;hlen</p>
+          <p class="upload-hint">.docx, .doc, .txt oder .md Dateien</p>
+          <input type="file" id="file-input" multiple accept=".txt,.md,.pdf,.doc,.docx" hidden>
+        </div>
+        <div class="chapter-list" id="chapter-list">
+          <!-- Chapters will be added here dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Generate -->
+    <section class="step-section" id="step-generate">
+      <div class="step-header">
+        <span class="step-number">4</span>
+        <h2>Buch generieren</h2>
+      </div>
+      <div class="step-content">
+        <div class="generate-info">
+          <div class="info-row">
+            <span class="info-label">Kapitel:</span>
+            <span class="info-value" id="chapter-count">0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Gesch&auml;tzte Dauer:</span>
+            <span class="info-value" id="estimated-time">-</span>
+          </div>
+        </div>
+        <button id="generate-btn" class="btn btn-primary btn-large" disabled>
+          Buch erstellen
+        </button>
+        <!-- Progress -->
+        <div class="progress-area" id="progress-area" hidden>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <p class="progress-text" id="progress-text">Starte...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 5: Preview & Download -->
+    <section class="step-section" id="step-preview" hidden>
+      <div class="step-header">
+        <span class="step-number">5</span>
+        <h2>Vorschau &amp; Download</h2>
+      </div>
+      <div class="step-content">
+        <p class="step-description">
+          Hier siehst du eine Vorschau deiner Kapitel. Klicke auf &bdquo;Vorschau&ldquo;, um das ganze Kapitel zu lesen, oder auf &bdquo;Neu generieren&ldquo;, um ein Kapitel mit neuen Anweisungen &uuml;berarbeiten zu lassen.
+        </p>
+        <div id="preview-area">
+          <div id="preview-cards" class="preview-cards-grid">
+            <!-- Preview cards are rendered here by JS -->
+          </div>
+        </div>
+        <div class="preview-actions-bar">
+          <button id="download-btn" class="btn btn-success btn-large">
+            Buch herunterladen (.docx)
+          </button>
+          <button id="reset-btn" class="btn btn-outline btn-large">
+            Neues Buch starten
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter Preview Modal -->
+    <div class="modal-overlay" id="chapter-modal" hidden>
+      <div class="modal-content">
+        <button class="modal-close" id="modal-close-btn" title="Schlie&szlig;en">&times;</button>
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-title">Kapitel</h2>
+          <span class="modal-badge" id="modal-badge"></span>
+        </div>
+        <div class="modal-body" id="modal-body">
+          <!-- Formatted chapter content rendered here -->
+        </div>
+        <div class="regen-section" id="regen-section" hidden>
+          <h3>Kapitel neu generieren</h3>
+          <p class="regen-hint">Gib zus&auml;tzliche Anweisungen f&uuml;r die KI, z.&nbsp;B. &bdquo;K&uuml;rzer schreiben&ldquo; oder &bdquo;Mehr Coaching-Impulse einbauen&ldquo;.</p>
+          <textarea id="regen-instructions" class="input-field textarea-field" rows="3" placeholder="Zus&auml;tzliche Anweisungen (optional)..."></textarea>
+          <button id="regen-btn" class="btn btn-primary" style="margin-top: 10px;">
+            Neu generieren
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Van Asten Coaching &ndash; Bewusstseinswerkstatt</p>
+    </footer>
+  </div>
+
+  <script src="js/docx-generator.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
